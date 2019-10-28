@@ -11,6 +11,7 @@ public class WideColumnTable<K> {
         private List<WideColumnRow> rows;
     }
 
+    private String table_name;
     List<Partition> partitions;
 
     /**
