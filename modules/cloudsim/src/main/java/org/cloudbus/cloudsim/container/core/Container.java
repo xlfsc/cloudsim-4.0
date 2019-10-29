@@ -1,7 +1,7 @@
 package org.cloudbus.cloudsim.container.core;
 
+import org.cloudbus.cloudsim.VmStateHistoryEntry;
 import org.cloudbus.cloudsim.container.schedulers.ContainerCloudletScheduler;
-import org.cloudbus.cloudsim.*;
 import org.cloudbus.cloudsim.util.MathUtil;
 
 import java.util.ArrayList;
@@ -132,6 +132,7 @@ public class Container {
 
     /**
      * Creates a new Container object.
+     *
      * @param id
      * @param userId
      * @param mips
@@ -286,8 +287,8 @@ public class Container {
     /**
      * Generate unique string identificator of the container.
      *
-     * @param userId the user id
-     * @param containerId   the container id
+     * @param userId      the user id
+     * @param containerId the container id
      * @return string uid
      */
     public static String getUid(int userId, int containerId) {
