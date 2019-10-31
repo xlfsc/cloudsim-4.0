@@ -15,8 +15,31 @@ import java.util.concurrent.TimeUnit;
  */
 public class RedisContainer extends Container {
 
-    double accessTime;
-    double responseTime;
+    private double accessTime;
+    private double responseTime;
+
+    //连接实例的最大连接数
+    private int MAX_ACTIVE = 1024;
+    //控制一个pool最多有多少个状态为idle(空闲的)的jedis实例，默认值也是8。
+    private int MAX_IDLE = 8;
+    //等待可用连接的最大时间，单位毫秒，默认值为-1，表示永不超时。如果超过等待时间，则直接抛出JedisConnectionException
+    private int MAX_WAIT = 10000;
+    //连接超时的时间　　
+    private int TIMEOUT = 10000;
+    // 在borrow一个jedis实例时，是否提前进行validate操作；如果为true，则得到的jedis实例均是可用的；
+    private boolean TEST_ON_BORROW = true;
+
+    //数据库模式是16个数据库 0~15
+    public static final int DEFAULT_DATABASE = 0;
+
+    /**
+     * 当前连接数
+     */
+    private int current_active = 0;
+    /**
+     * 当前空闲的jedis实例
+     */
+    private int current_idle = 0;
 
     /**
      * Creates a new Container object.
@@ -56,6 +79,73 @@ public class RedisContainer extends Container {
         return false;
     }
 
+    public int getMAX_ACTIVE() {
+        return MAX_ACTIVE;
+    }
+
+    public void setMAX_ACTIVE(int MAX_ACTIVE) {
+        this.MAX_ACTIVE = MAX_ACTIVE;
+    }
+
+    public int getMAX_IDLE() {
+        return MAX_IDLE;
+    }
+
+    public void setMAX_IDLE(int MAX_IDLE) {
+        this.MAX_IDLE = MAX_IDLE;
+    }
+
+    public int getMAX_WAIT() {
+        return MAX_WAIT;
+    }
+
+    public void setMAX_WAIT(int MAX_WAIT) {
+        this.MAX_WAIT = MAX_WAIT;
+    }
+
+    public int getTIMEOUT() {
+        return TIMEOUT;
+    }
+
+    public void setTIMEOUT(int TIMEOUT) {
+        this.TIMEOUT = TIMEOUT;
+    }
+
+    public boolean isTEST_ON_BORROW() {
+        return TEST_ON_BORROW;
+    }
+
+    public void setTEST_ON_BORROW(boolean TEST_ON_BORROW) {
+        this.TEST_ON_BORROW = TEST_ON_BORROW;
+    }
+
+    public static int getDefaultDatabase() {
+        return DEFAULT_DATABASE;
+    }
+
+    public int getCurrent_active() {
+        return current_active;
+    }
+
+    public void setCurrent_active(int current_active) {
+        this.current_active = current_active;
+    }
+
+    public int getCurrent_idle() {
+        return current_idle;
+    }
+
+    public void setCurrent_idle(int current_idle) {
+        this.current_idle = current_idle;
+    }
+
+    public int getAvailableActive() {
+        return this.MAX_ACTIVE - this.current_active;
+    }
+
+    public int getAvailableIdle() {
+        return this.MAX_IDLE - this.current_idle;
+    }
 
     /**
      * key存在时删除key
