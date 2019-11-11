@@ -164,7 +164,7 @@ public class ContainerCloudSimExample1 {
             String logAddress = "~/Results";
 
             @SuppressWarnings("unused")
-			PowerContainerDatacenter e = (PowerContainerDatacenter) createDatacenter("datacenter",
+            PowerContainerDatacenter e = (PowerContainerDatacenter) createDatacenter("datacenter",
                     PowerContainerDatacenterCM.class, hostList, vmAllocationPolicy, containerAllocationPolicy,
                     getExperimentName("ContainerCloudSimExample-1", String.valueOf(overBookingFactor)),
                     ConstantsExamples.SCHEDULING_INTERVAL, logAddress,
@@ -177,6 +177,8 @@ public class ContainerCloudSimExample1 {
             broker.submitCloudletList(cloudletList.subList(0, containerList.size()));
             broker.submitContainerList(containerList);
             broker.submitVmList(vmList);
+
+
             /**
              * 12- Determining the simulation termination time according to the cloudlet's workload.
              */
@@ -192,8 +194,44 @@ public class ContainerCloudSimExample1 {
             /**
              * 15- Printing the results when the simulation is finished.
              */
+
+            /**
+             * S2: Requests are going through SLB_GW
+             */
+            ServiceLoadBalancerGW slb_gw = new ServiceLoadBalancerGW(0, 0, 1000, 1, 512, 1000, cloudletList);
+            broker.connectWithSLB_GW(slb_gw);
+
+            /**
+             * S3: Requests processed by GW K8S
+             * Capacity of SLB GW can be configured here
+             */
+            GW_K8S gw_k8s= new GW_K8S(0, 0, 1000, 1, 512, 1000, cloudletList);
+            broker.connectWithGW_K8S(gw_k8s);
+
+            /**
+             * S4: Connect with Redis, update response time
+             * Redis configurations can be configured here
+             */
+            Redis redis = new Redis(0, 0, 1000, 1, 512, 1000, cloudletList);
+            broker.connectWithRedis(redis);
+
+            /**
+             * S5: Requests going through SLB NFR
+             * SLB specification can be defined here
+             */
+            ServiceLoadBalancerNFR slb_nfr = new ServiceLoadBalancerNFR(0, 0, 2000, 1, 512, 1000, cloudletList);
+            broker.connectWithSLB_NFR(slb_nfr);
+
+            /**
+             * S6: Connect with MockService();
+             * Mock service (constant response time configured here). The response time should be updated
+             */
+            broker.connectWithMockService(new MockService("Service1", "MS1", 300));
+
             List<ContainerCloudlet> newList = broker.getCloudletReceivedList();
             printCloudletList(newList);
+
+            Log.printConcatLine("Total Response Time is ", broker.getResponeTime() + "ms");
 
             Log.printLine("ContainerCloudSimExample1 finished!");
         } catch (Exception e) {
@@ -409,11 +447,16 @@ public class ContainerCloudSimExample1 {
     public static List<ContainerCloudlet> createContainerCloudletList(int brokerId, int numberOfCloudlets)
             throws FileNotFoundException {
         String inputFolderName = ContainerCloudSimExample1.class.getClassLoader().getResource("workload/planetlab").getPath();
+
+        // System.out.println(inputFolderName);
+
+        //    java.io.File inputFolder1 = new java.io.File("D:/EclipseWorkSpace/cloudsim-5.0/cloudsim-5.0/modules/cloudsim-examples/src/main/resources/workload/planetlab/");
+        java.io.File inputFolder1 = new java.io.File(inputFolderName+ "/");
+
         ArrayList<ContainerCloudlet> cloudletList = new ArrayList<ContainerCloudlet>();
         long fileSize = 300L;
         long outputSize = 300L;
         UtilizationModelNull utilizationModelNull = new UtilizationModelNull();
-        java.io.File inputFolder1 = new java.io.File(inputFolderName);
         java.io.File[] files1 = inputFolder1.listFiles();
         int createdCloudlets = 0;
         for (java.io.File aFiles1 : files1) {

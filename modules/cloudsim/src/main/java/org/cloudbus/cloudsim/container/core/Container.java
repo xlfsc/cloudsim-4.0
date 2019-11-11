@@ -130,6 +130,8 @@ public class Container {
     private double schedulingInterval;
 
 
+    List<ContainerCloudlet> cloudletList;
+
     /**
      * Creates a new Container object.
      *
@@ -172,6 +174,42 @@ public class Container {
         setCurrentAllocatedRam(0);
         setCurrentAllocatedSize(0);
         setSchedulingInterval(schedulingInterval);
+    }
+
+
+    /**
+     * Another construct method
+     *
+     * @param id
+     * @param userId
+     * @param mips
+     * @param numberOfPes
+     * @param ram
+     * @param bw
+     */
+    public Container(
+            int id,
+            int userId,
+            double mips,
+            int numberOfPes,
+            int ram,
+            long bw,
+            List<ContainerCloudlet> cloudletList) {
+        setWorkloadMips(mips);
+        setId(id);
+        setUserId(userId);
+        setUid(getUid(userId, id));
+        setMips(mips);
+        setNumberOfPes(numberOfPes);
+        setRam(ram);
+        setBw(bw);
+        setBeingInstantiated(true);
+        setCurrentAllocatedBw(0);
+        setCurrentAllocatedMips(null);
+        setCurrentAllocatedRam(0);
+        setCurrentAllocatedSize(0);
+        setSchedulingInterval(schedulingInterval);
+        setCloudletList(cloudletList);
     }
 
     /**
@@ -771,6 +809,11 @@ public class Container {
     protected void setSchedulingInterval(double schedulingInterval) {
         this.schedulingInterval = schedulingInterval;
     }
+
+    protected void setCloudletList(List<ContainerCloudlet> cloudletList) {
+        this.cloudletList = cloudletList;
+    }
+
 
 //
 

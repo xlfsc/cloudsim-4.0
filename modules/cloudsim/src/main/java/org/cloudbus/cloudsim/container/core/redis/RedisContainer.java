@@ -10,27 +10,31 @@ import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-/**
- * https://gitee.com/whvse/RedisUtil
- */
 public class RedisContainer extends Container {
 
+    private ERedisModel model;
+
     private double accessTime;
+    @Deprecated
     private double responseTime;
 
+    private int nodes;
+    private int IONumber;
+    private int readNodeNumber;
+
     //连接实例的最大连接数
-    private int MAX_ACTIVE = 1024;
-    //控制一个pool最多有多少个状态为idle(空闲的)的jedis实例，默认值也是8。
-    private int MAX_IDLE = 8;
+    private int MAX_ACTIVE;
+    //控制一个pool最多有多少个状态为idle(空闲的)的jedis实例。
+    private int MAX_IDLE;
     //等待可用连接的最大时间，单位毫秒，默认值为-1，表示永不超时。如果超过等待时间，则直接抛出JedisConnectionException
-    private int MAX_WAIT = 10000;
+    private int MAX_WAIT;
     //连接超时的时间　　
-    private int TIMEOUT = 10000;
+    private int TIMEOUT;
     // 在borrow一个jedis实例时，是否提前进行validate操作；如果为true，则得到的jedis实例均是可用的；
     private boolean TEST_ON_BORROW = true;
 
     //数据库模式是16个数据库 0~15
-    public static final int DEFAULT_DATABASE = 0;
+    private int DEFAULT_DATABASE;
 
     /**
      * 当前连接数
@@ -57,6 +61,35 @@ public class RedisContainer extends Container {
      */
     public RedisContainer(int id, int userId, double mips, int numberOfPes, int ram, long bw, long size, String containerManager, ContainerCloudletScheduler containerCloudletScheduler, double schedulingInterval) {
         super(id, userId, mips, numberOfPes, ram, bw, size, containerManager, containerCloudletScheduler, schedulingInterval);
+        init();
+    }
+
+    private void init() {
+        this.accessTime = Configuration.getProperty("redis.accessTime", 10000d);
+        this.responseTime = Configuration.getProperty("redis.responseTime", 10000d);
+        this.MAX_ACTIVE = Configuration.getProperty("redis.MAX_ACTIVE", 1024);
+        this.MAX_IDLE = Configuration.getProperty("redis.MAX_IDLE", 8);
+        this.MAX_WAIT = Configuration.getProperty("redis.MAX_WAIT", 10000);
+        this.TIMEOUT = Configuration.getProperty("redis.TIMEOUT", 10000);
+        this.DEFAULT_DATABASE = Configuration.getProperty("redis.DEFAULT_DATABASE", 16);
+
+        this.model = ERedisModel.valueOf(Configuration.getProperty("redis.model", "STANDARDDOUBLE"));
+        this.nodes = Configuration.getProperty("redis.nodes", 10);
+        this.IONumber = Configuration.getProperty("redis.io.number", 10);
+        this.readNodeNumber = Configuration.getProperty("redis.read.node.number", 10);
+    }
+
+    private int qps() {
+        return QpsCaculate.QpsCaculate(getId(), nodes, current_active, MAX_ACTIVE, getBw()
+                , getMips(), model.getStatus(), IONumber, readNodeNumber);
+    }
+
+    private int qps(ERedisOperationType type) {
+        int qps = qps();
+        switch (type) {
+            default:
+                return qps;
+        }
     }
 
     public double getAccessTime() {
@@ -119,7 +152,7 @@ public class RedisContainer extends Container {
         this.TEST_ON_BORROW = TEST_ON_BORROW;
     }
 
-    public static int getDefaultDatabase() {
+    public int getDefaultDatabase() {
         return DEFAULT_DATABASE;
     }
 
@@ -152,7 +185,8 @@ public class RedisContainer extends Container {
      *
      * @param key
      */
-    public void delete(String key) {
+    public int delete(String key) {
+        return qps(ERedisOperationType.Key);
     }
 
     /**

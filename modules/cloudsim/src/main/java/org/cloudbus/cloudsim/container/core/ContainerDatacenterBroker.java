@@ -23,7 +23,7 @@ import java.util.HashMap;
 
 public class ContainerDatacenterBroker extends SimEntity {
 
-
+    private int responseTime;
     /**
      * The vm list.
      */
@@ -33,7 +33,7 @@ public class ContainerDatacenterBroker extends SimEntity {
      * The vms created list.
      */
     protected List<? extends ContainerVm> vmsCreatedList;
-/**
+    /**
      * The containers created list.
      */
     protected List<? extends Container> containersCreatedList;
@@ -43,7 +43,7 @@ public class ContainerDatacenterBroker extends SimEntity {
      */
     protected List<? extends ContainerCloudlet> cloudletList;
     /**
-    * The container list
+     * The container list
      */
 
     protected List<? extends Container> containerList;
@@ -101,7 +101,7 @@ public class ContainerDatacenterBroker extends SimEntity {
      * The vms to datacenters map.
      */
     protected Map<Integer, Integer> vmsToDatacentersMap;
- /**
+    /**
      * The vms to datacenters map.
      */
     protected Map<Integer, Integer> containersToDatacentersMap;
@@ -150,6 +150,7 @@ public class ContainerDatacenterBroker extends SimEntity {
         setContainersToDatacentersMap(new HashMap<Integer, Integer>());
         setDatacenterCharacteristicsList(new HashMap<Integer, ContainerDatacenterCharacteristics>());
         setNumberOfCreatedVMs(0);
+        setResponseTime(0);
     }
 
     /**
@@ -254,15 +255,15 @@ public class ContainerDatacenterBroker extends SimEntity {
             if(vmId ==-1){
                 Log.printConcatLine("Error : Where is the VM");}
             else{
-            getContainersToVmsMap().put(containerId, vmId);
-            getContainersCreatedList().add(ContainerList.getById(getContainerList(), containerId));
+                getContainersToVmsMap().put(containerId, vmId);
+                getContainersCreatedList().add(ContainerList.getById(getContainerList(), containerId));
 
 //            ContainerVm p= ContainerVmList.getById(getVmsCreatedList(), vmId);
-            int hostId = ContainerVmList.getById(getVmsCreatedList(), vmId).getHost().getId();
-            Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": The Container #", containerId,
-                     ", is created on Vm #",vmId
-                    , ", On Host#", hostId);
-            setContainersCreated(getContainersCreated()+1);}
+                int hostId = ContainerVmList.getById(getVmsCreatedList(), vmId).getHost().getId();
+                Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": The Container #", containerId,
+                        ", is created on Vm #",vmId
+                        , ", On Host#", hostId);
+                setContainersCreated(getContainersCreated()+1);}
         } else {
             //Container container = ContainerList.getById(getContainerList(), containerId);
             Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Failed Creation of Container #", containerId);
@@ -404,6 +405,8 @@ public class ContainerDatacenterBroker extends SimEntity {
         cloudletsSubmitted--;
         if (getCloudletList().size() == 0 && cloudletsSubmitted == 0) { // all cloudlets executed
             Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": All Cloudlets executed. Finishing...");
+            // Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Response Time is: ", getResponeTime());
+
             clearDatacenters();
             finishExecution();
         } else { // some cloudlets haven't finished yet
@@ -471,7 +474,7 @@ public class ContainerDatacenterBroker extends SimEntity {
         for (ContainerCloudlet cloudlet : getCloudletList()) {
             //Log.printLine("Containers Created" + getContainersCreated());
             if (containerIndex < getContainersCreated()) {
-                    //Log.printLine("Container Index" + containerIndex);
+                //Log.printLine("Container Index" + containerIndex);
 //                    int containerId = getContainersCreatedList().get(containerIndex).getId();
 //                    bindCloudletToContainer(cloudlet.getCloudletId(), containerId);
                 if(getContainersToVmsMap().get(cloudlet.getContainerId()) != null) {
@@ -578,26 +581,26 @@ public class ContainerDatacenterBroker extends SimEntity {
         int i = 0;
         for(Container container:getContainerList()) {
             ContainerCloudlet cloudlet = getCloudletList().get(i);
-                //Log.printLine("Containers Created" + getContainersCreated());
+            //Log.printLine("Containers Created" + getContainersCreated());
 
-                if (cloudlet.getUtilizationModelCpu() instanceof UtilizationModelPlanetLabInMemory) {
-                    UtilizationModelPlanetLabInMemory temp = (UtilizationModelPlanetLabInMemory) cloudlet.getUtilizationModelCpu();
-                    double[] cloudletUsage = temp.getData();
-                    Percentile percentile = new Percentile();
-                    double percentileUsage = percentile.evaluate(cloudletUsage, getOverBookingfactor());
-                    //Log.printLine("Container Index" + containerIndex);
-                    double newmips = percentileUsage * container.getMips();
+            if (cloudlet.getUtilizationModelCpu() instanceof UtilizationModelPlanetLabInMemory) {
+                UtilizationModelPlanetLabInMemory temp = (UtilizationModelPlanetLabInMemory) cloudlet.getUtilizationModelCpu();
+                double[] cloudletUsage = temp.getData();
+                Percentile percentile = new Percentile();
+                double percentileUsage = percentile.evaluate(cloudletUsage, getOverBookingfactor());
+                //Log.printLine("Container Index" + containerIndex);
+                double newmips = percentileUsage * container.getMips();
 //                    double newmips = percentileUsage * container.getMips();
 //                    double maxUsage = Doubles.max(cloudletUsage);
 //                    double newmips = maxUsage * container.getMips();
-                    container.setWorkloadMips(newmips);
+                container.setWorkloadMips(newmips);
 //                    bindCloudletToContainer(cloudlet.getCloudletId(), container.getId());
-                    cloudlet.setContainerId(container.getId());
-                    if(cloudlet.getContainerId() != container.getId()){
+                cloudlet.setContainerId(container.getId());
+                if(cloudlet.getContainerId() != container.getId()){
 //                        Log.printConcatLine("Binding Cloudlet: ", cloudlet.getCloudletId(), "To Container: ",container.getId() , "Now it is", cloudlet.getContainerId());
-                    }
-
                 }
+
+            }
             i++;
 
         }
@@ -968,6 +971,44 @@ public class ContainerDatacenterBroker extends SimEntity {
 
     public void setNumberOfCreatedVMs(int numberOfCreatedVMs) {
         this.numberOfCreatedVMs = numberOfCreatedVMs;
+    }
+
+    /**
+     * Connect with Mock Services
+     * @param mockService
+     */
+    public void connectWithMockService(MockService mockService){
+//        System.out.println("Updating Mock Services");
+        setResponseTime(this.getResponeTime() + mockService.getResponeTime());
+
+    }
+
+    /**
+     * Connect with Redis
+     * @param redis
+     */
+    public void connectWithRedis(Redis redis){
+        setResponseTime(this.getResponeTime() + redis.getResponseTime());
+    }
+
+    public void connectWithSLB_NFR(ServiceLoadBalancerNFR slb_nfr){
+        setResponseTime(this.getResponeTime() + slb_nfr.getResponseTime());
+    }
+
+    public void connectWithSLB_GW(ServiceLoadBalancerGW slb_gw){
+        setResponseTime(this.getResponeTime() + slb_gw.getResponseTime());
+    }
+
+    public void connectWithGW_K8S(GW_K8S gw_k8s){
+        setResponseTime(this.getResponeTime() + gw_k8s.getResponseTime());
+    }
+
+    public void setResponseTime(int responseTime){
+        this.responseTime = responseTime;
+    }
+
+    public int getResponeTime(){
+        return responseTime;
     }
 }
 
