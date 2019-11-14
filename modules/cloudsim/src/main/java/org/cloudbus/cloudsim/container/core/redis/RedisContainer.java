@@ -3,6 +3,7 @@ package org.cloudbus.cloudsim.container.core.redis;
 import com.oracle.jrockit.jfr.DataType;
 import org.cloudbus.cloudsim.container.core.Container;
 import org.cloudbus.cloudsim.container.schedulers.ContainerCloudletScheduler;
+import org.cloudbus.cloudsim.container.utils.Configuration;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.ZSetOperations.TypedTuple;

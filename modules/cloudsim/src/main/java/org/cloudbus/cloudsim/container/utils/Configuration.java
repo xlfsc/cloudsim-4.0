@@ -1,4 +1,4 @@
-package org.cloudbus.cloudsim.container.core.redis;
+package org.cloudbus.cloudsim.container.utils;
 
 import org.apache.commons.lang3.StringUtils;
 

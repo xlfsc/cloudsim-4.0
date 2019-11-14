@@ -5,5 +5,8 @@ public enum ERedisOperationType {
     String,
     List,
     HashSet,
-    Normal
+    Normal,
+    Query,
+    QueryMinimumRequest,
+    QueryNotRequestRecently
 }

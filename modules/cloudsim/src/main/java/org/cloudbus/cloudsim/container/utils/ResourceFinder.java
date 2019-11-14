@@ -1,4 +1,4 @@
-package org.cloudbus.cloudsim.container.core.redis;
+package org.cloudbus.cloudsim.container.utils;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.StandardSystemProperty;
