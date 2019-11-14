@@ -2,11 +2,11 @@ package org.cloudbus.cloudsim.container.core;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.cloudbus.cloudsim.container.utils.Configuration;
 import org.cloudbus.cloudsim.container.core.redis.ERedisModel;
 import org.cloudbus.cloudsim.container.core.redis.ERedisOperationType;
 import org.cloudbus.cloudsim.container.core.redis.QpsCaculate;
 import org.cloudbus.cloudsim.container.schedulers.ContainerCloudletScheduler;
+import org.cloudbus.cloudsim.container.utils.Configuration;
 import org.cloudbus.cloudsim.container.utils.MapOperator;
 
 import java.util.List;
@@ -28,7 +28,15 @@ public class Redis extends Container {
     private int current_connection = 0;
 
     private int max_storage;
+    /**
+     * key：任务ID
+     * value：最近请求时间
+     */
     private Map<Integer, Long> cache;
+    /**
+     * key：任务ID
+     * value：请求频率
+     */
     private Map<Integer, Integer> cache_request_count;
 
     /**
